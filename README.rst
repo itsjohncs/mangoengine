@@ -1,7 +1,7 @@
 MangoEngine
 ===============================
 
-MangoEngine is a simple library for creating models for JSON objects. Its interface is inspired by the fantastic [MongoEngine](http://mongoengine.org/) library, it resides (basically) in the public domain, and it has no dependencies.
+MangoEngine is a simple library for creating models for JSON objects. Its interface is inspired by the fantastic `MongoEngine <http://mongoengine.org/>`_ library, it resides (basically) in the public domain, and it has no dependencies.
 
 .. code-block:: python
 
