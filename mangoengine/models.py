@@ -1,6 +1,3 @@
-# stdlib
-import json
-
 # mongoengine
 import fields
 
@@ -40,4 +37,9 @@ class Model(object):
         for k, v in self._fields.items():
             v.validate(getattr(self, k))
 
+    @classmethod
+    def from_dict(cls, dictionary):
+        return cls(**dictionary)
 
+    def to_dict(self):
+        return dict((k, getattr(self, k)) for k in self._fields.keys())

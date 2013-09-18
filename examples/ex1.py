@@ -24,3 +24,7 @@ try_validate(f)
 
 f.compatible_with["key"] = ["value1", "value2"]
 try_validate(f)
+
+d = f.to_dict()
+print d
+print Foo.from_dict(d)
