@@ -27,6 +27,13 @@ The models you create with MangoEngine are self-documenting and simple to create
 
 You can leverage this library to create your own light-weight ORM for your application regardless of what your backing store is, without abstracting away important details like queries.
 
+How do I use it?
+----------------
+
+You can install MangoEngine using pip by running ``pip install mangoengine``.
+
+For references and tutorials, see `our documentation on ReadTheDocs <http://mangoengine.readthedocs.org>`_.
+
 About the Project
 -----------------
 
