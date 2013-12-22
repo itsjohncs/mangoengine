@@ -140,6 +140,12 @@ class Model(object):
         """
         Tranforms the current object into a dictionary representation.
 
+        .. note::
+
+            It very uninterestingly calls the ``vars()`` built-in on itself,
+            but should be used instead of calling ``vars()`` directly in case
+            of implementation changes in the future.
+
         """
 
-        return dict((k, getattr(self, k)) for k in self._fields.keys())
+        return vars(self)

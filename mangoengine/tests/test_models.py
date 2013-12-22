@@ -111,3 +111,29 @@ class TestModel:
         assert person3.name is None
         assert person3.age is None
         assert person3.siblings is None
+
+    def test_to_dict(self):
+        """Ensures that Model.to_dict() works as advertised."""
+
+        class Person(Model):
+            name = StringField()
+            age = IntegralField(bounds = (0, None))
+            siblings = ListField(of = StringField())
+
+        data1 = {
+            "name": "Joe Shmoe",
+            "age": 21,
+            "siblings": ["Dick Shmoe", "Jane Shmoe"]
+        }
+        person1 = Person(**data1)
+        assert person1.to_dict() == data1
+
+        # The defined but unset fields should still be present, but set to none
+        data2 = {"notaname": 2, "age": "lots"}
+        person2 = Person.from_dict(data2)
+        assert person2.to_dict() == {
+            "notaname": 2,
+            "age": "lots",
+            "name": None,
+            "siblings": None
+        }
