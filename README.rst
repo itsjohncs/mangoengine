@@ -1,7 +1,7 @@
 MangoEngine
 ===========
 
-MangoEngine is a light-weight library for creating generic data models in Python.
+MangoEngine is a lightweight library for creating generic data models in Python.
 
 .. code-block:: python
 
