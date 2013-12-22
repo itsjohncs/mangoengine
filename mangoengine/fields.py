@@ -50,7 +50,7 @@ class StringField(Field):
     def __init__(self, **default_kwargs):
         super(StringField, self).__init__(**default_kwargs)
 
-def UnicodeField(Field):
+class UnicodeField(Field):
     """A unicode string field. Only values of type ``unicode`` are accepted."""
 
     _expected_type = unicode
