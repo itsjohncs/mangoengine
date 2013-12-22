@@ -125,11 +125,16 @@ class Model(object):
         .. note::
 
             Validation is not performed. Make sure to call validate()
-            afterwards if desired.
+            afterwards if validation is desired.
 
         """
 
-        return cls(**dictionary)
+        # We're just going to directly plug the values in.
+        instance = cls()
+        for k, v in dictionary.items():
+            setattr(instance, k, v)
+
+        return instance
 
     def to_dict(self):
         """

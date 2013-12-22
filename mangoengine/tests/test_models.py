@@ -30,12 +30,84 @@ class TestModel:
         # Create a simple class. We're going to test nearly exactly the
         # scenario described in the docstring above.
         class Foo(Model):
-            field1 = StringField()
             unrelated = 2
             notafield = 3
 
-        assert not hasattr(Foo, "field1")
         assert hasattr(Foo, "unrelated")
+        assert Foo.unrelated == 2
+
         assert hasattr(Foo, "notafield")
+        assert Foo.notafield == 3
+
+    def test_fields(self):
+        """
+        This will ensure that a model's ``_fields`` attribute gets set
+        correctly and that all field defintion attributes get removed from the
+        class.
+
+        """
+
+        class Foo(Model):
+            field1 = StringField()
+            field2 = IntegralField()
+
+        assert hasattr(Foo, "_fields")
+        assert type(Foo._fields) is dict
+
+        assert not hasattr(Foo, "field1")
         assert "field1" in Foo._fields
         assert type(Foo._fields["field1"]) is StringField
+
+        assert not hasattr(Foo, "field2")
+        assert "field2" in Foo._fields
+        assert type(Foo._fields["field2"]) is IntegralField
+
+    def test_empty_model(self):
+        """
+        A simple smoke test to ensure that an empty model doesn't cause any
+        errors. I don't see a use case for an empty model but that doesn't mean
+        it should be taken off the table.
+
+        """
+
+        class Foo(Model):
+            pass
+
+        assert hasattr(Foo, "_fields")
+        assert type(Foo._fields) is dict
+        assert len(Foo._fields.items()) == 0
+
+    def test_from_dict(self):
+        """Tests to ensure Model.from_dict() works as advertised."""
+
+        class Person(Model):
+            name = StringField()
+            age = IntegralField(bounds = (0, None))
+            siblings = ListField(of = StringField())
+
+        # In the normal case where all the data coincides with fields
+        # correctly.
+        person1 = Person.from_dict({
+            "name": "Joe Shmoe",
+            "age": 21,
+            "siblings": ["Dick Shmoe", "Jane Shmoe"]
+        })
+        assert person1.name == "Joe Shmoe"
+        assert person1.age == 21
+        assert person1.siblings == ["Dick Shmoe", "Jane Shmoe"]
+
+        # In the less normal case where the data does not coincide with fields
+        person2 = Person.from_dict({
+            "notaname": 2,
+            "age": "lots"
+        })
+        assert person2.notaname == 2
+        assert person2.age == "lots"
+        assert person2.name is None
+        assert person2.siblings is None
+
+        # In the even less normal case where no data exists at all
+        person3 = Person.from_dict({})
+        assert person3.name is None
+        assert person3.age is None
+        assert person3.siblings is None
