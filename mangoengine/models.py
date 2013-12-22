@@ -40,7 +40,7 @@ class ModelMetaclass(type):
 
     def __new__(cls, clsname, bases, dct):
         # These will be any attributes that define a field
-        data_fields = {}
+        field_definitions = {}
 
         # These will be any other attributes (unrelated attributes that we
         # don't want to touch)
@@ -48,20 +48,16 @@ class ModelMetaclass(type):
 
         for k, v in dct.items():
             # If this attribute defines a field...
-            if not isinstance(v, fields.Field):
-                attributes[k] = v
-            else:
+            if isinstance(v, fields.Field):
                 # Set the name attribute of the field, this allows for better
                 # error messages.
                 v.name = k
 
-                data_fields[k] = v
+                field_definitions[k] = v
+            else:
+                attributes[k] = v
 
-        attributes["_fields"] = data_fields
-
-        # This will ensure that only fields that were registered can be
-        # used (it also make the structure more memory efficient).
-        attributes["__slots__"] = data_fields.keys()
+        attributes["_fields"] = field_definitions
 
         return type.__new__(cls, clsname, bases, attributes)
 
