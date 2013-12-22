@@ -4,11 +4,19 @@ MangoEngine API Reference
 The Model Class
 ---------------
 
-.. automodule:: mangoengine
-    :members: Model
+.. autoclass:: mangoengine.Model
+    :members:
 
 Fields
 ------
 
 .. automodule:: mangoengine
     :members: Field, StringField, UnicodeField, NumericField, IntegralField, DictField, ListField
+
+The ModelMetaclass Metaclass
+----------------------------
+
+This metaclass is not a part of the MangoEngine public interface and should not be accessed directly. It is useful to look at to understand how the models work however.
+
+.. autoclass:: mangoengine.models.ModelMetaclass
+    :members:

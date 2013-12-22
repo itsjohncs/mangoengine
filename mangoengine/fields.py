@@ -6,7 +6,7 @@ class Field(object):
     The base Field class. Should be inherited from and not used directly.
 
     :ivar name: The name of the field in the model. For example, if the model
-        defines a field ``hair_color`` as a StringField, that StringField's
+        defines a field ``hair_color`` as a :class:`.StringField`, that :class:`.StringField`'s
         ``name`` should be set to ``"hair_color"``.
     :ivar nullable: If False, the value of this field may not be None.
 
@@ -97,8 +97,8 @@ class DictField(Field):
     A dictionary field. Only values of type ``dict`` are accepted.
 
     :ivar of_key: A the type of field that every key must be. Example, if this
-        is a StringField, all keys in the dictionary must be strings.
-    :ivar of_value: Similar to of_key but affecting the values.
+        is a :class:`.StringField`, all keys in the dictionary must be strings.
+    :ivar of_value: Similar to ``of_key`` but affecting the values.
 
     """
 
@@ -127,7 +127,7 @@ class ListField(Field):
     A list field. Only values of type ``list`` are accepted.
 
     :ivar of: The type of field that each list item must be. For example, if
-        StringField is given, all list items must be strings.
+        a :class:`.StringField` is given, all list items must be strings.
 
     """
 

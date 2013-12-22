@@ -65,23 +65,31 @@ class Model(object):
     """
     Derive from this class to make your own models.
 
+    :ivar _fields: A dictionary mapping any field names to their
+        :class:`mangoengine.Field` instances.
+
     .. code-block:: python
 
-        >>> class Foo(Model):
-        ...     a = StringField()
-        ...     b = ListField()
+        >>> class Person(Model):
+        ...     name = StringField()
+        ...     unrelated = 3
         ...
-        >>> f = Foo(a = 3)
-        >>> f
-        Foo(a = 3, b = None)
-        >>> f.a
+        >>> Person.name
+        Traceback (most recent call last):
+          File "<stdin>", line 1, in <module>
+        AttributeError: type object 'Person' has no attribute 'name'
+        >>> Person.unrelated
         3
-        >>> f.b = 4
-        >>> f
-        Foo(a = 3, b = 4)
-        >>> f.validate()
-        [...]
-        ValidationFailure: For field 'a': expecting str, got int.
+        >>> Person._fields
+        {'name': <mangoengine.fields.StringField object at 0x2200d50>}
+        >>> person = Person(name = "John")
+        >>> person
+        Person(name = 'John')
+
+    .. note::
+
+        The magic handling of the class attributes is made possible through the
+        :class:`mangoengine.models.ModelMetaclass` metaclass.
 
     """
 
