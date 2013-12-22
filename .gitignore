@@ -40,3 +40,10 @@ nosetests.xml
 # Sublime
 *.sublime-project
 *.sublime-workspace
+
+# Sphinx build
+docs/_build
+
+# Virtual environments
+env
+*.env
