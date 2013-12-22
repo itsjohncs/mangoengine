@@ -3,58 +3,101 @@ import errors
 
 class Field(object):
     """
-    A basic field. Can be inherited from.
+    The base Field class. Should be inherited from and not used directly.
 
-    :ivar nullable: If False, the value of this field cannot be None.
+    :ivar name: The name of the field in the model. For example, if the model
+        defines a field ``hair_color`` as a StringField, that StringField's
+        ``name`` should be set to ``"hair_color"``.
+    :ivar nullable: If False, the value of this field may not be None.
 
     """
 
     _expected_type = None
     """
-    The expected type of the field. Used internally by MangoEngine and can be
-    leveraged when creating your own fields.
+    The expected type of the field's value. Should always be set in new fields.
+    Will be tested using ``isinstance()`` so any type that derives from this
+    type will also be accepted.
+
+    If set to None type checking will not be performed during validation.
 
     """
 
     def __init__(self, nullable = False):
+        self.name = "unknown"
         self.nullable = nullable
 
     def validate(self, value):
-        # Ensure that if the value is None, it's OK
+        # Check if the value is None
         if not self.nullable and value is None:
-            raise errors.ValidationFailure("value cannot be None.")
+            raise errors.ValidationFailure(self.name, "value cannot be None.")
 
-        # Ensure the that value is the corect type
-        if (value is not None and
-                self._expected_type is not None and
-                not isinstance(value, self._expected_type)):
-            raise errors.ValidationFailure(
-                "Expecting %s, got %s." % (
-                   self. _expected_type.__name__,
-                    type(value).__name__
+        # If we should perform type checking
+        if value is not None and self._expected_type is not None:
+            # Ensure the type of value is correct
+            if not isinstance(value, self._expected_type):
+                raise errors.ValidationFailure(self.name,
+                    "expected type %s, got %s." % (
+                        self._expected_type.__name__,
+                        type(value).__name__
+                    )
                 )
-            )
 
 class StringField(Field):
-    """
-    A string field.
+    """A string field. Only values of type ``str`` are accepted."""
 
-    """
-
-    _expected_type = basestring
+    _expected_type = str
 
     def __init__(self, **default_kwargs):
         super(StringField, self).__init__(**default_kwargs)
 
+def UnicodeField(Field):
+    """A unicode string field. Only values of type ``unicode`` are accepted."""
+
+    _expected_type = unicode
+
+    def __init__(self, **default_kwargs):
+        super(UnicodeField, self).__init__(**default_kwargs)
+
+class NumericField(Field):
+    """
+    A numeric field. Only types of int, long, and double are accepted.
+
+    :ivar bounds: A two-tuple containing a lower and upper bound.
+
+    """
+
+    _expected_type = (int, long, float)
+
+    def __init__(self, bounds = (None, None), **default_kwargs):
+        self.bounds = bounds
+
+        super(NumericField, self).__init__(**default_kwargs)
+
     def validate(self, value):
-        super(StringField, self).validate(value)
+        if self.bounds[0] is not None and value < self.bounds[0]:
+            raise Validation
+
+class IntegralField(NumericField):
+    """
+    An integral field. Only types of int and long are accepted.
+
+    :ivar bounds: A two-tuple containing a lower and upper bound.
+
+    """
+
+    _expected_type = (int, long)
+
+    def __init__(self, bounds = (None, None), **default_kwargs):
+        self.bounds = bounds
+
+        super(IntegralField, self).__init__(**default_kwargs)
 
 class DictField(Field):
     """
-    A dictionary or map.
+    A dictionary field. Only values of type ``dict`` are accepted.
 
     :ivar of_key: A the type of field that every key must be. Example, if this
-            is a StringField, all keys in the dictionary must be strings.
+        is a StringField, all keys in the dictionary must be strings.
     :ivar of_value: Similar to of_key but affecting the values.
 
     """
@@ -67,9 +110,12 @@ class DictField(Field):
         super(DictField, self).__init__(**default_kwargs)
 
     def validate(self, value):
+        # Validate all of the keys
         if value is not None and self.of_key is not None:
             for k in value.keys():
                 self.of_key.validate(k)
+
+        # Validate all of the values
         if value is not None and self.of_value is not None:
             for v in value.values():
                 self.of_value.validate(v)
@@ -78,10 +124,10 @@ class DictField(Field):
 
 class ListField(Field):
     """
-    A list.
+    A list field. Only values of type ``list`` are accepted.
 
     :ivar of: The type of field that each list item must be. For example, if
-            StringField is given, all list items must be strings.
+        StringField is given, all list items must be strings.
 
     """
 
@@ -89,9 +135,11 @@ class ListField(Field):
 
     def __init__(self, of = None, **default_kwargs):
         self.of = of
+
         super(ListField, self).__init__(**default_kwargs)
 
     def validate(self, value):
+        # Validate all of the list items
         if self.of is not None:
             for i in value:
                 self.of.validate(i)

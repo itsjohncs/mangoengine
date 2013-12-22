@@ -5,7 +5,7 @@ class ModelMetaclass(type):
     """
     A simple metaclass responsible for setting up Model classes appropriately.
 
-    The created class will have a `_fields` class variable that contains a
+    The created class will have a ``_fields`` class variable that contains a
     dictionary mapping field names to instances of Field. For example...
 
     .. code-block:: python
@@ -39,14 +39,29 @@ class ModelMetaclass(type):
     """
 
     def __new__(cls, clsname, bases, dct):
+        # These will be any attributes that define a field
         data_fields = {}
+
+        # These will be any other attributes (unrelated attributes that we
+        # don't want to touch)
         attributes = {}
+
         for k, v in dct.items():
+            # If this attribute defines a field...
             if not isinstance(v, fields.Field):
                 attributes[k] = v
             else:
+                # Set the name attribute of the field, this allows for better
+                # error messages.
+                v.name = k
+
                 data_fields[k] = v
+
         attributes["_fields"] = data_fields
+
+        # This will ensure that only fields that were registered can be
+        # used (it also make the structure more memory efficient).
+        attributes["__slots__"] = data_fields.keys()
 
         return type.__new__(cls, clsname, bases, attributes)
 
@@ -70,7 +85,7 @@ class Model(object):
         Foo(a = 3, b = 4)
         >>> f.validate()
         [...]
-        mangoengine.errors.ValidationFailure: Expecting basestring, got int.
+        ValidationFailure: For field 'a': expecting str, got int.
 
     """
 
@@ -81,7 +96,7 @@ class Model(object):
             if k not in self._fields:
                 raise TypeError(
                     "'%s' is an invalid keyword argument for this "
-                    "function" % (k, )
+                    "function." % (k, )
                 )
 
         for k, v in self._fields.items():
@@ -94,7 +109,8 @@ class Model(object):
 
     def validate(self):
         """
-        Validates the object to ensure each field has an appropriate value.
+        Validates the object to ensure each field has an appropriate value. An
+        exception is thrown if validation fails.
 
         :returns: None
 
@@ -110,7 +126,10 @@ class Model(object):
         """
         Creates a new instance of the model from the given dictionary.
 
-        :warning: Validation is not performed.
+        .. note::
+
+            Validation is not performed. Make sure to call validate()
+            afterwards if desired.
 
         """
 
@@ -119,8 +138,6 @@ class Model(object):
     def to_dict(self):
         """
         Tranforms the current object into a dictionary representation.
-
-        :warning: Validation is not performed
 
         """
 
