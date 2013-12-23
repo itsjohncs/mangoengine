@@ -13,6 +13,15 @@ Fields
 .. automodule:: mangoengine
     :members: Field, StringField, UnicodeField, NumericField, IntegralField, DictField, ListField
 
+Errors
+------
+
+.. autoclass:: mangoengine.ValidationFailure
+    :members:
+
+.. autoclass:: mangoengine.UnknownAttribute
+    :members:
+
 The ModelMetaclass Metaclass
 ----------------------------
 

@@ -1,5 +1,10 @@
+# internal
 from ..models import Model
 from ..fields import *
+from ..errors import *
+
+# external
+import pytest
 
 class TestModel:
     def test_unrelated_attributes(self):
@@ -137,3 +142,36 @@ class TestModel:
             "name": None,
             "siblings": None
         }
+
+    def test_validate(self):
+        class Person(Model):
+            name = StringField()
+            age = IntegralField(bounds = (0, None))
+            siblings = ListField(of = StringField())
+
+        data1 = {
+            "name": "Joe Shmoe",
+            "age": 21,
+            "siblings": ["Dick Shmoe", "Jane Shmoe"]
+        }
+        person1 = Person(**data1)
+        person1.validate() # Should not raise an exception
+
+        # Create a copy of the dictionary with the additional keyvalue
+        # "chocolate": "chips".
+        data2 = dict(data1.items() + [("chocolate", "chips")])
+        person2 = Person.from_dict(data2)
+        person2.validate()
+        with pytest.raises(UnknownAttribute):
+            person2.validate(allow_unknown_data = False)
+
+        # Make sure we can override the default properly
+        class Person2(Model):
+            _allow_unknown_data = False
+
+            name = StringField()
+            age = IntegralField(bounds = (0, None))
+            siblings = ListField(of = StringField())
+        person3 = Person2.from_dict(data2)
+        with pytest.raises(UnknownAttribute):
+            person3.validate()

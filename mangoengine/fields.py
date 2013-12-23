@@ -140,7 +140,7 @@ class ListField(Field):
 
     def validate(self, value):
         # Validate all of the list items
-        if self.of is not None:
+        if value is not None and self.of is not None:
             for i in value:
                 self.of.validate(i)
 

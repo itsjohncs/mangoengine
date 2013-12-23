@@ -1,5 +1,6 @@
 # mongoengine
-import fields
+from .fields import Field
+from .errors import UnknownAttribute
 
 class ModelMetaclass(type):
     """
@@ -48,7 +49,7 @@ class ModelMetaclass(type):
 
         for k, v in dct.items():
             # If this attribute defines a field...
-            if isinstance(v, fields.Field):
+            if isinstance(v, Field):
                 # Set the name attribute of the field, this allows for better
                 # error messages.
                 v.name = k
@@ -65,8 +66,10 @@ class Model(object):
     """
     Derive from this class to make your own models.
 
-    :ivar _fields: A dictionary mapping any field names to their
+    :cvar _fields: A dictionary mapping any field names to their
         :class:`mangoengine.Field` instances.
+    :cvar _allow_unknown_data: Sets the default value for the
+        ``allow_unknown_data`` parameter in :meth:`.validate()`.
 
     .. code-block:: python
 
@@ -111,16 +114,30 @@ class Model(object):
         args = ", ".join("%s = %s" % (k, repr(v)) for k, v in arg_list)
         return "%s(%s)" % (type(self).__name__, args)
 
-    def validate(self):
+    def validate(self, allow_unknown_data = None):
         """
-        Validates the object to ensure each field has an appropriate value. An
-        exception is thrown if validation fails.
+        Validates the object to ensure each field has an appropriate value. A
+        :class:`mangoengine.ValidationFailure` will be thrown if validation
+        fails.
 
-        :returns: None
+        :param allow_unknown_data: If True, when an unknown attribute is found
+            the validation will fail. Uses the value of
+            ``self._allow_unknown_data`` if ``None`` is specified, or ``True``
+            if no such attribute exists.
 
-        :raises ValidationFailure: On failure.
+        :returns: ``None``
 
         """
+
+        # Default to the class attribute if the user didn't specify a value
+        if allow_unknown_data is None:
+            allow_unknown_data = getattr(self, "_allow_unknown_data", True)
+
+        if not allow_unknown_data:
+            expected_keys = set(self._fields.keys())
+            for i in self.to_dict().keys():
+                if i not in expected_keys:
+                    raise UnknownAttribute(i)
 
         for k, v in self._fields.items():
             v.validate(getattr(self, k))
@@ -145,15 +162,6 @@ class Model(object):
         return instance
 
     def to_dict(self):
-        """
-        Tranforms the current object into a dictionary representation.
-
-        .. note::
-
-            It very uninterestingly calls the ``vars()`` built-in on itself,
-            but should be used instead of calling ``vars()`` directly in case
-            of implementation changes in the future.
-
-        """
+        """Tranforms the current object into a dictionary representation."""
 
         return vars(self)
