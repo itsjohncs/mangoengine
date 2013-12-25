@@ -35,9 +35,17 @@ class Field(object):
         if value is not None and self._expected_type is not None:
             # Ensure the type of value is correct
             if not isinstance(value, self._expected_type):
+                # Build a human readable string for the type(s)
+                if type(self._expected_type) in (list, tuple):
+                    type_string_list = ", ".join(
+                        i.__name__ for i in self._expected_type)
+                    type_string = "(one of %s)" % (type_string_list, )
+                else:
+                    type_string = self._expected_type.__name__
+
                 raise errors.ValidationFailure(self.name,
                     "expected type %s, got %s." % (
-                        self._expected_type.__name__,
+                        type_string,
                         type(value).__name__
                     )
                 )
@@ -62,7 +70,7 @@ class NumericField(Field):
     """
     A numeric field. Only types of int, long, and double are accepted.
 
-    :ivar bounds: A two-tuple containing a lower and upper bound.
+    :ivar bounds: A two-tuple containing a lower and upper inclusive bound.
 
     """
 
@@ -74,14 +82,21 @@ class NumericField(Field):
         super(NumericField, self).__init__(**default_kwargs)
 
     def validate(self, value):
-        if self.bounds[0] is not None and value < self.bounds[0]:
-            raise Validation
+        if (self.bounds[0] is not None and value < self.bounds[0]) or \
+                (self.bounds[1] is not None and value > self.bounds[1]):
+            raise errors.ValidationFailure(
+                self.name,
+                "%s is out of bounds of %s." % (
+                    repr(value), repr(self.bounds))
+            )
+
+        super(NumericField, self).validate(value)
 
 class IntegralField(NumericField):
     """
     An integral field. Only types of int and long are accepted.
 
-    :ivar bounds: A two-tuple containing a lower and upper bound.
+    :ivar bounds: A two-tuple containing a lower and upper inclusive bound.
 
     """
 
