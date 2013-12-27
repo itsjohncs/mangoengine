@@ -103,9 +103,7 @@ class IntegralField(NumericField):
     _expected_type = (int, long)
 
     def __init__(self, bounds = (None, None), **default_kwargs):
-        self.bounds = bounds
-
-        super(IntegralField, self).__init__(**default_kwargs)
+        super(IntegralField, self).__init__(bounds, **default_kwargs)
 
 class DictField(Field):
     """

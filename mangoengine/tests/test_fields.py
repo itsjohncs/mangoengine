@@ -60,6 +60,47 @@ TEST_CASES = [
 
             # Upper bounds
             ExtendedValue([(None, 100)], {}, 102),
+            ExtendedValue([(None, 100.3)], {}, long(9999)),
+            ExtendedValue([(None, -3)], {}, -2.2),
+
+            # Lower bounds
+            ExtendedValue([(0, None)], {}, -1),
+            ExtendedValue([(0.1, None)], {}, long(-9999)),
+            ExtendedValue([(-20, None)], {}, -21),
+
+            # Both
+            ExtendedValue([(0, 100)], {}, -1),
+            ExtendedValue([(0, 100.4)], {}, 101.5),
+            ExtendedValue([(-20, 100)], {}, -21)
+        ]
+    },
+    {
+        "field_type": IntegralField,
+        "good_values": [
+            # No bounds
+            1, long(10), -2, 0, True, False,
+
+            # Upper bounds
+            ExtendedValue([(None, 100)], {}, 2),
+            ExtendedValue([(None, 100)], {}, 100),
+            ExtendedValue([(None, 0)], {}, -2),
+
+            # Lower bounds
+            ExtendedValue([(0, None)], {}, 2),
+            ExtendedValue([(0, None)], {}, 0),
+            ExtendedValue([(-20, None)], {}, -2),
+
+            # Both
+            ExtendedValue([(0, 100)], {}, 0),
+            ExtendedValue([(0, 100)], {}, 100),
+            ExtendedValue([(-20, 100)], {}, -2)
+        ],
+        "bad_values": [
+            # Bad types
+            "hello", "4", 3.4, -2.3, 0.0,
+
+            # Upper bounds
+            ExtendedValue([(None, 100)], {}, 102),
             ExtendedValue([(None, 100)], {}, long(9999)),
             ExtendedValue([(None, -3)], {}, -2),
 
@@ -73,11 +114,6 @@ TEST_CASES = [
             ExtendedValue([(0, 100)], {}, 101),
             ExtendedValue([(-20, 100)], {}, -21)
         ]
-    },
-    {
-        "field_type": IntegralField,
-        "good_values": [1, 5, long(9999), 0, -2, True, False],
-        "bad_values": ["hello", 1.0]
     }
     # {
     #     # Checking
