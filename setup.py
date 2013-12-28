@@ -15,9 +15,10 @@ setup(
     version = read("VERSION").strip(),
     author = "John Sullivan",
     author_email = "john@galahgroup.com",
-    description = "A simple library for creating models for JSON objects.",
+    description = "MangoEngine is a lightweight library for creating generic "
+        "data models in Python.",
     license = "Unlicense",
-    keywords = "json models",
+    keywords = "json python models",
     url = "https://www.github.com/brownhead/mangoengine",
     packages = find_packages(),
     long_description = read("README.rst"),
