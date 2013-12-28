@@ -137,7 +137,8 @@ TEST_CASES = [
 ]
 
 class TestFields:
-    @pytest.mark.parametrize("test_case", TEST_CASES)
+    @pytest.mark.parametrize("test_case", TEST_CASES,
+        ids = [i["field_type"].__name__ for i in TEST_CASES])
     def test_standard_cases(self, test_case):
 
         # This function will help us deal with the ExtendedValue objects
