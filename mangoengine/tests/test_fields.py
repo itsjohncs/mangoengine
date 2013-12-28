@@ -118,7 +118,7 @@ TEST_CASES = [
     {
         "field_type": ListField,
         "good_values": [
-            [1, 2, 3], [1, "a", 2.3],
+            [1, 2, 3], [1, "a", 2.3], [],
 
             ExtendedValue([NumericField()], {}, [1, 2, 3]),
             ExtendedValue([StringField()], {}, ["a", "b", "c"]),
@@ -132,6 +132,29 @@ TEST_CASES = [
             ExtendedValue([StringField()], {}, ["a", 2, "c"]),
             ExtendedValue(
                 [ListField(of = NumericField())], {}, [[1, 2], ["b", 2]])
+        ]
+    },
+    {
+        "field_type": DictField,
+        "good_values": [
+            {1: 2, "a": 2}, {}, {1: [2], 3: [3]},
+
+            ExtendedValue([NumericField(), StringField()], {},
+                {1: "a", 2: "b"}),
+            ExtendedValue([NumericField(), ListField(NumericField())], {},
+                {1: [1, 2], 3: []}),
+            ExtendedValue([NumericField(bounds = (0, None))], {},
+                {1: [1, 2], 2: "a"})
+        ],
+        "bad_values": [
+            [1], 1, True, "b",
+
+            ExtendedValue([NumericField(), StringField()], {},
+                {1: 2, 3: 4}),
+            ExtendedValue([NumericField(), ListField(NumericField())], {},
+                {1: ["a", "b"], 3: []}),
+            ExtendedValue([NumericField(bounds = (0, None))], {},
+                {-1: [1, 2], 2: "a"})
         ]
     }
 ]
