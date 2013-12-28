@@ -22,6 +22,9 @@ class ExtendedValue:
         self.kwargs = kwargs
         self.value = value
 
+# This list is read by test_standard_cases() below and is fairly self-
+# explanatory, though the use of the ExtendedValue class may require a
+# moment of looking around to understand.
 TEST_CASES = [
     {
         "field_type": StringField,
