@@ -109,7 +109,7 @@ class DictField(Field):
     """
     A dictionary field. Only values of type ``dict`` are accepted.
 
-    :ivar of_key: A the type of field that every key must be. Example, if this
+    :ivar of_key: The type of field that every key must be. Example, if this
         is a :class:`.StringField`, all keys in the dictionary must be strings.
     :ivar of_value: Similar to ``of_key`` but affecting the values.
 

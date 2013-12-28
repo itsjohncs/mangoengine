@@ -114,12 +114,26 @@ TEST_CASES = [
             ExtendedValue([(0, 100)], {}, 101),
             ExtendedValue([(-20, 100)], {}, -21)
         ]
+    },
+    {
+        "field_type": ListField,
+        "good_values": [
+            [1, 2, 3], [1, "a", 2.3],
+
+            ExtendedValue([NumericField()], {}, [1, 2, 3]),
+            ExtendedValue([StringField()], {}, ["a", "b", "c"]),
+            ExtendedValue(
+                [ListField(of = NumericField())], {}, [[1, 2], [1, 2]])
+        ],
+        "bad_values": [
+            1, "a", 1.2,
+
+            ExtendedValue([NumericField()], {}, [1, 2, "c"]),
+            ExtendedValue([StringField()], {}, ["a", 2, "c"]),
+            ExtendedValue(
+                [ListField(of = NumericField())], {}, [[1, 2], ["b", 2]])
+        ]
     }
-    # {
-    #     # Checking
-    #     "field_type": DictField,
-    #     "good_values"
-    # }
 ]
 
 class TestFields:
