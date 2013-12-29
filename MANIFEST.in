@@ -1,4 +1,4 @@
 include README.rst
-include LICENSE
+include UNLICENSE
 include VERSION
-recursive-include mangoengine *.ini *.py *.txt
+recursive-include mangoengine *.py
