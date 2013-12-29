@@ -1,0 +1,4 @@
+include README.rst
+include LICENSE
+include VERSION
+recursive-include mangoengine *.ini *.py *.txt
