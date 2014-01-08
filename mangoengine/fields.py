@@ -158,3 +158,24 @@ class ListField(Field):
                 self.of.validate(i)
 
         super(ListField, self).validate(value)
+
+class ModelField(Field):
+    """
+    A field that can wrap any Model class.
+
+    :ivar model: The type of Model it accepts.
+
+    """
+
+    def __init__(self, model, **default_kwargs):
+        self._expected_type = self.model = model
+
+        super(ModelField, self).__init__(**default_kwargs)
+
+    def validate(self, value):
+        # We perform our base class's validation first so it can do type
+        # checking before we try and call .validate() on the value.
+        super(ModelField, self).validate(value)
+
+        value.validate()
+

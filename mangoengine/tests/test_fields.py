@@ -1,6 +1,7 @@
 # internal
 from ..errors import ValidationFailure
 from ..fields import *
+from .. import models
 
 # external
 import pytest
@@ -199,3 +200,35 @@ class TestFields:
             field, value = create_field_value_tuple(i)
             with pytest.raises(ValidationFailure):
                 field.validate(value)
+
+    def test_modelfield(self):
+        """
+        We test the ModelField seperately because it depends on the model
+        module working as well.
+
+        """
+
+        class Person(models.Model):
+            name = StringField()
+            age = IntegralField(bounds = (0, None))
+            siblings = ListField(of = StringField())
+
+        class NotAPerson(models.Model):
+            not_name = StringField()
+
+        field = ModelField(Person)
+
+        person = Person(name = "joe", age = 3, siblings = ["bob"])
+        field.validate(person)
+
+        person = Person(name = "bill", age = -1, siblings = ["george"])
+        with pytest.raises(ValidationFailure):
+            field.validate(person)
+
+        person = NotAPerson(not_name = "not joe")
+        with pytest.raises(ValidationFailure):
+            field.validate(person)
+
+        person = "definitely not a person"
+        with pytest.raises(ValidationFailure):
+            field.validate(person)
