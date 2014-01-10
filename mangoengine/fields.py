@@ -70,7 +70,8 @@ class NumericField(Field):
     """
     A numeric field. Only types of int, long, and double are accepted.
 
-    :ivar bounds: A two-tuple containing a lower and upper inclusive bound.
+    :ivar bounds: A two-tuple containing a lower and upper **inclusive**
+        bound.
 
     """
 
@@ -96,7 +97,8 @@ class IntegralField(NumericField):
     """
     An integral field. Only types of int and long are accepted.
 
-    :ivar bounds: A two-tuple containing a lower and upper inclusive bound.
+    :ivar bounds: A two-tuple containing a lower and upper **inclusive**
+        bound.
 
     """
 
