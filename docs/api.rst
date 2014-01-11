@@ -11,7 +11,7 @@ Fields
 ------
 
 .. automodule:: mangoengine
-    :members: Field, StringField, UnicodeField, NumericField, IntegralField, DictField, ListField
+    :members: Field, StringField, UnicodeField, NumericField, IntegralField, DictField, ListField, ModelField
 
 Errors
 ------
