@@ -47,6 +47,13 @@ class ModelMetaclass(type):
         # don't want to touch)
         attributes = {}
 
+        # Inherit any fields from our base classes. We go right to left in
+        # order to give fields on the left higher precedence in the case of
+        # name conflicts.
+        for i in reversed(bases):
+            if getattr(i, "__metaclass__", None) is ModelMetaclass:
+                field_definitions.update(i._fields)
+
         for k, v in dct.items():
             # If this attribute defines a field...
             if isinstance(v, Field):

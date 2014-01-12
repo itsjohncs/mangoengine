@@ -175,3 +175,71 @@ class TestModel:
         person3 = Person2.from_dict(data2)
         with pytest.raises(UnknownAttribute):
             person3.validate()
+
+    def test_inheritance(self):
+        class A(Model):
+            a = StringField()
+
+        class B(A):
+            b = StringField()
+
+        class C(B):
+            c = StringField()
+
+        class D(C):
+            # This should overwrite B's definition of b
+            b = IntegralField()
+
+        model_a = A()
+        assert (hasattr(model_a, "a") and not hasattr(model_a, "b") and
+            not hasattr(model_a, "c"))
+
+        model_b = B()
+        assert (hasattr(model_b, "a") and hasattr(model_b, "b") and
+            not hasattr(model_b, "c"))
+
+        model_c = C()
+        assert (hasattr(model_c, "a") and hasattr(model_c, "b") and
+            hasattr(model_c, "c"))
+
+        model_d = D()
+        assert (hasattr(model_d, "a") and hasattr(model_d, "b") and
+            hasattr(model_d, "c"))
+        assert isinstance(model_d._fields["b"], IntegralField)
+
+    def test_multiple_inheritance(self):
+        class A(Model):
+            a = StringField()
+
+        class B(Model):
+            a = IntegralField()
+
+        class C(A, B):
+            b = DictField()
+
+        class D(B, A):
+            b = IntegralField()
+            c = StringField()
+
+        class E(D, B, A):
+            wat = IntegralField()
+
+        model_c = C()
+        assert hasattr(model_c, "a") and hasattr(model_c, "b")
+        assert (isinstance(model_c._fields["a"], StringField) and
+            isinstance(model_c._fields["b"], DictField))
+
+        model_d = D()
+        assert (hasattr(model_d, "a") and hasattr(model_d, "b") and
+            hasattr(model_d, "c"))
+        assert (isinstance(model_d._fields["a"], IntegralField) and
+            isinstance(model_d._fields["b"], IntegralField) and
+            isinstance(model_d._fields["c"], StringField))
+
+        model_e = E()
+        assert (hasattr(model_e, "a") and hasattr(model_e, "b") and
+            hasattr(model_e, "c") and hasattr(model_e, "wat"))
+        assert (isinstance(model_e._fields["a"], IntegralField) and
+            isinstance(model_e._fields["b"], IntegralField) and
+            isinstance(model_e._fields["c"], StringField) and
+            isinstance(model_e._fields["wat"], IntegralField))
