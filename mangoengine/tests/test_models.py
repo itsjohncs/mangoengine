@@ -117,6 +117,38 @@ class TestModel:
         assert person3.age is None
         assert person3.siblings is None
 
+        # Testing the allow_unknown_data parameter
+        with pytest.raises(UnknownAttribute):
+            person2 = Person.from_dict({
+                "notaname": 2,
+                "age": "lots"
+            }, allow_unknown_data = False)
+
+        class Hamster(Model):
+            _allow_unknown_data = False
+
+            name = StringField()
+
+        # Normal operation should continue unphased
+        hamster1 = Hamster(name = "hi")
+        hamster1.validate()
+
+        # We should not be able to create a Hamster with unknown attributes
+        with pytest.raises(UnknownAttribute):
+            hamster2 = Hamster.from_dict({
+                "name": "hello",
+                "notaname": 2
+            })
+
+        # Ensure we can override the class attribute
+        hamster3 = Hamster.from_dict({
+            "name": "hello",
+            "notaname": 2
+        }, allow_unknown_data = True)
+        assert hamster3.name == "hello"
+        assert hamster3.notaname == 2
+        hamster3.validate()
+
     def test_to_dict(self):
         """Ensures that Model.to_dict() works as advertised."""
 
@@ -162,19 +194,6 @@ class TestModel:
         data2 = dict(data1.items() + [("chocolate", "chips")])
         person2 = Person.from_dict(data2)
         person2.validate()
-        with pytest.raises(UnknownAttribute):
-            person2.validate(allow_unknown_data = False)
-
-        # Make sure we can override the default properly
-        class Person2(Model):
-            _allow_unknown_data = False
-
-            name = StringField()
-            age = IntegralField(bounds = (0, None))
-            siblings = ListField(of = StringField())
-        person3 = Person2.from_dict(data2)
-        with pytest.raises(UnknownAttribute):
-            person3.validate()
 
     def test_inheritance(self):
         class A(Model):

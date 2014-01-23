@@ -51,6 +51,7 @@ class ModelMetaclass(type):
         # order to give fields on the left higher precedence in the case of
         # name conflicts.
         for i in reversed(bases):
+            # Check if the current base class is a Model
             if getattr(i, "__metaclass__", None) is ModelMetaclass:
                 field_definitions.update(i._fields)
 
@@ -69,7 +70,69 @@ class ModelMetaclass(type):
 
         return type.__new__(cls, clsname, bases, attributes)
 
-class Model(object):
+class BaseModel(object):
+    """
+    Base class of both DictModel and Model. Do not inherit directly from this
+    class from outside of Mango Engine's internal code.
+
+    """
+
+    def _set_value(self, k, v):
+        """Called internally to set the value of a field."""
+
+        raise NotImplemented()
+
+    def _get_value(self, k):
+        """Called internally to get the value of a field."""
+
+        raise NotImplemented()
+
+    def _has_value(self, k):
+        raise NotImplemented()
+
+    def __init__(self):
+        for k in self._fields.keys():
+            if not self._has_value(k):
+                self._set_value(k, None)
+
+        super(BaseModel, self).__init__()
+
+    def __repr__(self):
+        arg_list = ((k, self._get_value(k)) for k in self._fields.keys())
+        args = ", ".join("%s = %s" % (k, repr(v)) for k, v in arg_list)
+        return "%s(%s)" % (type(self).__name__, args)
+
+    def validate(self):
+        """
+        Validates the object to ensure each field has an appropriate value. A
+        :class:`mangoengine.ValidationFailure` will be thrown if validation
+        fails.
+
+        :returns: ``None``
+
+        """
+
+        for k, v in self._fields.items():
+            v.validate(self._get_value(k))
+
+    def to_dict(self):
+        """Tranforms the current object into a dictionary representation."""
+
+        return vars(self)
+
+    def assign(self, dictionary, allow_unknown_data = None):
+        # Default to the class attribute if the user didn't specify a value
+        if allow_unknown_data is None:
+            allow_unknown_data = getattr(self, "_allow_unknown_data", True)
+
+        # We're just going to directly plug the values in.
+        for k, v in dictionary.items():
+            if k not in self._fields and not allow_unknown_data:
+                raise UnknownAttribute(k)
+
+            self._set_value(k, v)
+
+class Model(BaseModel):
     """
     Derive from this class to make your own models.
 
@@ -105,6 +168,15 @@ class Model(object):
 
     __metaclass__ = ModelMetaclass
 
+    def _set_value(self, k, v):
+        return setattr(self, k, v)
+
+    def _get_value(self, k):
+        return getattr(self, k)
+
+    def _has_value(self, k):
+        return hasattr(self, k)
+
     def __init__(self, **kwargs):
         for k in kwargs.keys():
             if k not in self._fields:
@@ -113,44 +185,12 @@ class Model(object):
                     "function." % (k, )
                 )
 
-        for k, v in self._fields.items():
-            setattr(self, k, kwargs.get(k, None))
+        self.assign(kwargs)
 
-    def __repr__(self):
-        arg_list = ((k, getattr(self, k)) for k in self._fields.keys())
-        args = ", ".join("%s = %s" % (k, repr(v)) for k, v in arg_list)
-        return "%s(%s)" % (type(self).__name__, args)
-
-    def validate(self, allow_unknown_data = None):
-        """
-        Validates the object to ensure each field has an appropriate value. A
-        :class:`mangoengine.ValidationFailure` will be thrown if validation
-        fails.
-
-        :param allow_unknown_data: If True, when an unknown attribute is found
-            the validation will fail. Uses the value of
-            ``self._allow_unknown_data`` if ``None`` is specified, or ``True``
-            if no such attribute exists.
-
-        :returns: ``None``
-
-        """
-
-        # Default to the class attribute if the user didn't specify a value
-        if allow_unknown_data is None:
-            allow_unknown_data = getattr(self, "_allow_unknown_data", True)
-
-        if not allow_unknown_data:
-            expected_keys = set(self._fields.keys())
-            for i in self.to_dict().keys():
-                if i not in expected_keys:
-                    raise UnknownAttribute(i)
-
-        for k, v in self._fields.items():
-            v.validate(getattr(self, k))
+        super(Model, self).__init__()
 
     @classmethod
-    def from_dict(cls, dictionary):
+    def from_dict(cls, dictionary, allow_unknown_data = None):
         """
         Creates a new instance of the model from the given dictionary.
 
@@ -159,16 +199,15 @@ class Model(object):
             Validation is not performed. Make sure to call validate()
             afterwards if validation is desired.
 
+        :param dictionary: The dictionary to pull the values from.
+        :param allow_unknown_data: If True, when an unknown attribute is found
+            the validation will fail. Uses the value of
+            ``self._allow_unknown_data`` if ``None`` is specified, or ``True``
+            if no such attribute exists.
+
         """
 
-        # We're just going to directly plug the values in.
         instance = cls()
-        for k, v in dictionary.items():
-            setattr(instance, k, v)
+        instance.assign(dictionary, allow_unknown_data)
 
         return instance
-
-    def to_dict(self):
-        """Tranforms the current object into a dictionary representation."""
-
-        return vars(self)
