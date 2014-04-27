@@ -83,13 +83,14 @@ class NumericField(Field):
         super(NumericField, self).__init__(**default_kwargs)
 
     def validate(self, value):
-        if (self.bounds[0] is not None and value < self.bounds[0]) or \
-                (self.bounds[1] is not None and value > self.bounds[1]):
-            raise errors.ValidationFailure(
-                self.name,
-                "%s is out of bounds of %s." % (
-                    repr(value), repr(self.bounds))
-            )
+        if value is not None:
+            if (self.bounds[0] is not None and value < self.bounds[0]) or \
+                    (self.bounds[1] is not None and value > self.bounds[1]):
+                raise errors.ValidationFailure(
+                    self.name,
+                    "%s is out of bounds of %s." % (
+                        repr(value), repr(self.bounds))
+                )
 
         super(NumericField, self).validate(value)
 
@@ -179,5 +180,5 @@ class ModelField(Field):
         # checking before we try and call .validate() on the value.
         super(ModelField, self).validate(value)
 
-        value.validate()
-
+        if value is not None:
+            value.validate()
